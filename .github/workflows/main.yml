@@ -1,0 +1,41 @@
+name: Run Selenium Script
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:   # 👈 This enables manual run button
+
+jobs:
+  selenium:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+
+      - name: Install Chrome and ChromeDriver
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y chromium-browser chromium-chromedriver
+          # Create the symlink only if it doesn't already exist
+          if [ ! -f /usr/bin/google-chrome ]; then
+            sudo ln -s /usr/bin/chromium-browser /usr/bin/google-chrome
+          fi
+          echo "✅ Chrome and Chromedriver installed"
+
+      - name: Run Selenium script
+        env:
+          CHROME_BIN: /usr/bin/chromium-browser
+          CHROMEDRIVER_PATH: /usr/bin/chromedriver
+        run: python roundcube.py
